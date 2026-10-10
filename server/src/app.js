@@ -28,19 +28,40 @@ app.get('/.well-known/appspecific/com.chrome.devtools.json', (req, res) => {
 app.get('/.well-known/*', (req, res) => res.status(204).end());
 
 // CORS configuration
-const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:5173',
+  'https://collaborative-code-editor-ashy.vercel.app',
+  process.env.CLIENT_URL,
+].filter(Boolean);
+
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps, curl, or same-origin)
-      if (!origin || origin === clientUrl || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+      // Allow requests with no origin (like mobile apps, curl, or Postman)
+      if (!origin) return callback(null, true);
+      
+      // Check if origin matches allowed origins or is any vercel.app deployment preview
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.endsWith('.vercel.app') ||
+        origin.startsWith('http://localhost:') ||
+        origin.startsWith('http://127.0.0.1:')
+      ) {
         return callback(null, true);
       }
-      return callback(null, true);
+      
+      return callback(null, true); // Permissive fallback to prevent any CORS block
     },
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
     credentials: true,
   })
 );
+
+// Explicit preflight handling
+app.options('*', cors());
 
 // Body Parsers with size limit
 app.use(express.json({ limit: '5mb' }));

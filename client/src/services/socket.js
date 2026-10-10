@@ -4,13 +4,23 @@ let socket = null;
 
 export const getSocket = () => {
   if (!socket) {
-    const SOCKET_URL = window.location.origin;
+    const DEFAULT_RENDER_BACKEND = 'https://collaborative-code-editor-kf4f.onrender.com';
+    let SOCKET_URL = window.location.origin;
+
+    if (import.meta.env.VITE_BACKEND_URL) {
+      SOCKET_URL = import.meta.env.VITE_BACKEND_URL;
+    } else if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
+      SOCKET_URL = DEFAULT_RENDER_BACKEND;
+    }
+
     socket = io(SOCKET_URL, {
       autoConnect: false,
       reconnection: true,
-      reconnectionAttempts: 10,
+      reconnectionAttempts: 20,
       reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
       transports: ['websocket', 'polling'],
+      withCredentials: true,
     });
 
     if (typeof socket.setMaxListeners === 'function') {

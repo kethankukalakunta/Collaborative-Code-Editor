@@ -1,6 +1,19 @@
 import axios from 'axios';
 
-const API_BASE = '/api/v1';
+const DEFAULT_RENDER_BACKEND = 'https://collaborative-code-editor-kf4f.onrender.com';
+
+const getBaseUrl = () => {
+  if (import.meta.env.VITE_BACKEND_URL) {
+    return import.meta.env.VITE_BACKEND_URL.replace(/\/$/, '');
+  }
+  if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
+    return DEFAULT_RENDER_BACKEND;
+  }
+  return '';
+};
+
+const rawBase = getBaseUrl();
+const API_BASE = rawBase ? `${rawBase}/api/v1` : '/api/v1';
 
 const api = axios.create({
   baseURL: API_BASE,

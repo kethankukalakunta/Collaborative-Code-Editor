@@ -14,11 +14,13 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: (origin, callback) => {
+      // Allow Vercel, localhost, and any origin
       callback(null, true);
     },
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     credentials: true,
   },
+  transports: ['websocket', 'polling'],
   pingTimeout: 30000,
   pingInterval: 25000,
   maxHttpBufferSize: 5e6, // 5MB buffer for large CRDT payloads
